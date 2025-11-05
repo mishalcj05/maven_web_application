@@ -1,39 +1,33 @@
 pipeline {
   agent any
 
-  tools {
-    maven 'maven'   // Name of Maven tool in Jenkins
-    jdk 'jdk'       // Name of JDK tool in Jenkins
-  }
-
   environment {
     WAR_NAME = 'maven_web_application.war'
     TOMCAT_WEBAPPS = '/opt/tomcat9/webapps'
   }
 
   stages {
-    stage('Checkout Code') {
-      steps {
-        checkout scm
-      }
+    stage('Checkout') {
+      steps { checkout scm }
     }
 
-    stage('Build WAR') {
+    stage('Build') {
       steps {
         sh 'mvn -B clean package -DskipTests'
       }
     }
 
-    stage('Deploy to Tomcat') {
+    stage('Deploy') {
       steps {
         script {
+          // find WAR
           def war = sh(script: "ls target/*.war | head -n 1", returnStdout: true).trim()
-          if (!war) { error "WAR not found" }
+          if (!war) { error "WAR not found in target/" }
 
-          echo "Deploying ${war} to Tomcat..."
-          sh "cp ${war} ${TOMCAT_WEBAPPS}/${WAR_NAME}"
+          echo "Copying ${war} to ${TOMCAT_WEBAPPS}/${env.WAR_NAME}"
+          sh "cp ${war} ${TOMCAT_WEBAPPS}/${env.WAR_NAME}"
 
-          echo "Restarting Tomcat..."
+          echo "Restarting Tomcat"
           sh "sudo systemctl restart tomcat"
         }
       }
@@ -41,11 +35,7 @@ pipeline {
   }
 
   post {
-    success {
-      echo '✅ Deployment successful!'
-    }
-    failure {
-      echo '❌ Deployment failed!'
-    }
+    success { echo "✅ Deployment successful" }
+    failure { echo "❌ Deployment failed" }
   }
 }
