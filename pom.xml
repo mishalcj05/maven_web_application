@@ -30,5 +30,13 @@
 
   <build>
     <finalName>maven_web_application</finalName>
+    <plugins>
+    <!-- explicit newer war plugin -->
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-war-plugin</artifactId>
+      <version>3.3.3</version> <!-- or 3.3.2 / latest stable -->
+    </plugin>
+  </plugins>
   </build>
 </project>
